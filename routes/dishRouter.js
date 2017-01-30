@@ -1,25 +1,26 @@
 var express=require('express');
 var mongoose=require('mongoose');
 var Dishes=require('../models/dishes');
+var Verify = require('./verify');
 
 var dishRouter=express.Router();
 
 dishRouter.route('/')
-.get( function(req,res,next)
+.get( Verify.verifyOrdinaryUser, function(req,res,next)
 	{
 		Dishes.find({}, function(err, dish){
 			if (err) throw err;
 			res.json(dish);
 		});
 	})
-.delete(function(req,res,next)
+.delete(Verify.verifyOrdinaryUser, function(req,res,next)
 	{
 		Dishes.remove({}, function(err, resp){
 			if (err) throw err;
 			res.json(resp);
 		});
 	})
-.post(function(req,res,next)
+.post(Verify.verifyOrdinaryUser, function(req,res,next)
 	{
 		Dishes.create(req.body, function(err, dish)
 			{

@@ -4,12 +4,14 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
 
 var mongoose=require('mongoose');
 //connection URL
-var url="mongodb://localhost:27017/confusion";
-mongoose.connect(url);
+var config = require('./config');
+
+mongoose.connect(config.mongoUrl);
 var db=mongoose.connection;
 
 //two scenarios
@@ -39,6 +41,14 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+// passport config
+var User = require('./models/user');
+app.use(passport.initialize());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
@@ -62,7 +72,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.json({message: res.locals.message, error: res.locals.error});
 });
 
 module.exports = app;
